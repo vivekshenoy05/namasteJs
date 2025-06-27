@@ -1,85 +1,73 @@
-// Js executes the program line by line but in case if you want to execute randomly 
-// we can acheive this by using callback function and pasing this function to setTimeout
-// asynchronous program in js exists because callback exists
+// promises in js
 
-console.log('hello');
-console.log('JS');
-console.log('world');
+// will take the example of ecommerce website and this website has the cart functionality
+const cart = ['pants','kurtas','pens'];
+// and here there are 2 apis
 
-// suppose you want to execute world at last 
+createOrder(cart); // this func returns orderId
+proceedToPayment(orderId);
 
-console.log('hello');
-function hi(){
- console.log('JS');
-}
+// these 2 functions are dependent on each other and both are asynchronous functions
+// first will see how we will write code using callbacks
 
-setTimeout(hi,10000);
+// first we will wrap the proceedToPayment func to form callbackFunction 
+// and this callback func is passed as parameter as the arguments to the createOrder function
 
-console.log('world');
+createOrder(cart, function(){
+    proceedToPayment(orderId);
+})
+// now it the job of the createOrder to create the order and call the callback function with orderID
+// here there is issue that is inversion of control
 
-// output
-// hello  world js
-// using callback its a powerful way to do asynchronous operations in js
+// to solve this problems we can use promises
+// we can write the code without using callbacks
+// craateOrder Api will no longer take the callBack function it will take just take  cart details.
+// it will return us the promise, we will capture taht promise in variable called promise
 
-// will take eg of ecommerce website
-// in ecommerce as we all know we will create order first and then we will process tio payment
-// first createOrder() api will be called and then proceedToPayment()
-// there is dependency between them and this is async operation
-// here callback comes into picture and callback helps us to write the code
+const promise = createOrder(cart);
+// whenever this line is executed by js engine we will get the promise
+// promise -> you can assume it to be empty object with some data value in it
+// this datavalue will hold what createOrder api return to us
 
-// a very common pattern which we follow in programming
-// we will wrap the proceedToPayment api inside callback function
-// this callback function is passed as parameter to createOrder api\
-// now its the job of createOrder api to create the order and then call proceedToPayment method
+//  whenever JS engine will execute this line 27) it will return as a promise 
+// promise is nothing but empty object  {data:undefined}.
+// the program will just go on executing, after 5 or 6 sec or how much ever time it takes
+// the promise object empty object will be filled with data automatically after whatever async time it takes
 
-const cart = ['apple', 'mango', 'pant'];
+// now will attach callback function to this createOrdrFunction
 
-api.createOrder(cart, function(){
-    api.proceedToPayment()
+promise.then(function(){
+    proceedToPayment(orderId);
 });
 
-// now if the payment is successful we need to show the order summary page
-// and for this we have api called as showOrderSummary() and this needs to called only after payment is successful
-// in this case we will have callback function and then we will pass this as parameter to proceedToPayment()
-// now its the job of proceed to payment api to complete the payment and call the showOrderSummary() function
+//  once we get data from createOrder api or have data inside callback functon,
+// the callbackFunction that we attach to promise object will automatically called 
 
-api.createOrder(cart, function(){
-    api.proceedToPayment(function(){
-        api.showOrderSummary()
-    })
-});
+//  in earlier case we were passing the callback function to another function
+// here in promises we are attaching callback function to a promise object
+// in promises we will have control of the program with us
 
-//  now will see the problems that we might face
-// now we have created the order, payment, show order summary
-// now we need to update the wallet
-// in this case also we need to again we need to pass callback function to showOrderSummarty()
+// here createOrder api will do only its job it will create the order and it will fill the promise object with data i.e orderId whenever
+// it wants to.
+// now whenever the promise object is filled with data it automatically calls the callback function and we will ahve control of the program
 
-api.createOrder(cart, function(){
-    api.proceedToPayment(function(){
-        api.showOrderSummary(function(){
-            api.updateWallet()
-        })
-    })
-});
+// earlier in callback scenario there were many doubts like what if the callback function is not executed or
+// what if function is executed twice 
 
-// so when we have large no of apis or code base this chaining keeps on increasing
-// if apis are dependent on each other we end up falling in callBack hell
-// our code starts to grow horizontally instead of vertically
-// this type of code is unmaintainable and unreadable
-// this horizontal structure is also known as pyramid of doom
+// promisess guarantee that functio will be executed once promise objects gets the data and it will execute only once
+
+// now will see how exact promise object will lokk like
+
+// fetch api is given by browser to make external api calls
+// we will use this fetch functions to make the api call to github servers and we will get the users info
+
+const GITHUB_API = 'https://api.github.com/users/vivekshenoy05'
+// this opensource api will give the info of the username
+// will fetch the userdetails
+//  the fetch() functions will return us the promise
+
+const user = fetch(GITHUB_API);
+// as soon as the line 69 is executed we will get promise inside this user variable
 
 
-// now will see inversion of control
-// inversion of control is another problem we see using callbck
-// inversion of control means you loose the control of your code when we are using callbacks
 
-api.createOrder(cart, function(){
-    api.proceedToPayment()
-});
-
-// in the above code we take the callback function and give it to createOrder api
-// now we are blindly trusting the createOrder api
-// we are assuming that createOrder api will create the order and then call proceedToPayment isn't it risky?
-// we gave the control of the program to createOrder api, there might be many bugs inside createOrder api
-// what is our callback function is never called
-// what if our callback function is called twice?
